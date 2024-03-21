@@ -8,7 +8,7 @@ article_name_dict = {
     
 }
 
-def print_categorymembers(categorymembers, level=0, max_level=1):
+def print_categorymembers(categorymembers, level=0, max_level=2):
     for c in categorymembers.values():
         print("%s: %s (ns: %d)" % ("*" * (level + 1), c.title, c.ns))
         title = c.title 
@@ -32,5 +32,5 @@ print("Category members: " + cat_name)
 print_categorymembers(cat.categorymembers)
 print(article_name_dict)
 
-with open("sample.json", "w") as outfile: 
-    json.dump(article_name_dict, outfile)
+with open("data/sample.json", "w") as outfile: 
+    json.dump(article_name_dict, outfile, indent=4)
