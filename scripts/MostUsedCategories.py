@@ -4,28 +4,18 @@ import json
 
 wiki_wiki = wikipediaapi.Wikipedia('WikipediaFoodCategoryIngredients (nae28@cornell.edu)', 'en')
 
-article_name_dict = {
+category_frequncy_dict = {
     
 }
 
 def print_categorymembers(categorymembers, level=0, max_level=2):
     for c in categorymembers.values():
         print("%s: %s (ns: %d)" % ("*" * (level + 1), c.title, c.ns))
-        title = c.title 
-        
-        body = c.text
-        categories = []
-        pages = []
-        for title in c.links.keys():
-            pages.append(title)
-        for cat in c.categories.keys():
-            categories.append(cat)
-        subDict = {
-            "body": body,
-            "pages": pages,
-            "categories": categories
-        }
-        article_name_dict[title] = subDict
+        for cat in c.categories:
+            if cat in category_frequncy_dict:
+                category_frequncy_dict[cat] +=1 
+            else:
+                category_frequncy_dict[cat] = 1
         if c.ns == wikipediaapi.Namespace.CATEGORY and level < max_level:
             print_categorymembers(c.categorymembers, level=level + 1, max_level=max_level)
 
@@ -34,7 +24,7 @@ cat_name = "Category:Foods_by_cooking_technique"
 cat = wiki_wiki.page(cat_name) 
 print("Category members: " + cat_name)
 print_categorymembers(cat.categorymembers)
-print(article_name_dict)
+print(category_frequncy_dict)
 
-with open("data/sample.json", "w") as outfile: 
-    json.dump(article_name_dict, outfile, indent=4)
+with open("data/categoryfreq.json", "w") as outfile: 
+    json.dump(category_frequncy_dict, outfile, indent=4)
