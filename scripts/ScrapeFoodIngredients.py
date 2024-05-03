@@ -7,6 +7,19 @@ wiki_wiki = wikipediaapi.Wikipedia('WikipediaFoodCategoryIngredients (nae28@corn
 article_name_dict = {
     
 }
+possible_categories_pages = set()
+def find_categorymembers(categorymembers, level=0, max_level=8):
+    for c in categorymembers.values():
+        possible_categories_pages.add(c.title)
+        if c.ns == wikipediaapi.Namespace.CATEGORY and level < max_level:
+            find_categorymembers(c.categorymembers, level=level + 1, max_level=max_level)
+
+
+cat_name = "Category:Foods_by_cooking_technique"
+cat = wiki_wiki.page(cat_name) 
+print("Category members: " + cat_name)
+find_categorymembers(cat.categorymembers)
+print(possible_categories_pages)
 
 def print_categorymembers(categorymembers, level=0, max_level=2):
     for c in categorymembers.values():
@@ -17,9 +30,11 @@ def print_categorymembers(categorymembers, level=0, max_level=2):
         categories = []
         pages = []
         for title in c.links.keys():
-            pages.append(title)
+            if title in possible_categories_pages:
+                pages.append(title)
         for cat in c.categories.keys():
-            categories.append(cat)
+            if cat in possible_categories_pages:
+                categories.append(cat)
         subDict = {
             "body": body,
             "pages": pages,
@@ -30,9 +45,7 @@ def print_categorymembers(categorymembers, level=0, max_level=2):
             print_categorymembers(c.categorymembers, level=level + 1, max_level=max_level)
 
 
-cat_name = "Category:Foods_by_cooking_technique"
-cat = wiki_wiki.page(cat_name) 
-print("Category members: " + cat_name)
+
 print_categorymembers(cat.categorymembers)
 print(article_name_dict)
 
