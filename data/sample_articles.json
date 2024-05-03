@@ -1,0 +1,17 @@
+{
+	"bread": { 
+        "body": "",
+        "links": ["croissant"],
+        "categories": ["baked-goods"]
+    },
+    "croissant": { 
+        "body": "",
+        "links": ["bread"],
+        "categories": ["baked-goods", "pastries"]
+    },
+    "bagel": { 
+        "body": "",
+        "links": ["bread"],
+        "categories": ["baked-goods"]
+    }
+}
