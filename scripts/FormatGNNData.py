@@ -7,19 +7,39 @@ from torch_geometric.transforms import RemoveDuplicatedEdges
 def get_categories_from_json(file):
     with open(file, 'r') as f:
         data = json.load(f)
-    return data['categories']
+
+    categories = [key.split(":")[1] for key in data.keys()]
+    return categories
 
 def get_articles_from_json(file):
     with open(file, 'r') as f:
         data = json.load(f)
 
     articles = [key for key in data.keys()]
-    articles_links = []
+    article_pages = []
     article_categories = []
     for _, value in data.items():
-        articles_links.append(value['links'])
-        article_categories.append(value['categories'])
-    return articles, articles_links, article_categories
+        article_pages.append(value['pages'])
+        categories = [category.split(":")[1] for category in value['categories']]
+        article_categories.append(categories)
+
+    article_links = []
+    indices = []
+    for i in range(len(article_pages)):
+        article_links.append([])
+        for j in range(len(article_pages[i])):
+            if article_pages[i][j] in articles:
+                article_links[i].append(article_pages[i][j])
+                indices.append(i)
+                indices.append(articles.index(article_pages[i][j]))
+    indices = list(set(indices))
+    indices.sort()
+
+    articles = [articles[i] for i in indices]
+    article_links = [article_links[i] for i in indices]
+    article_categories = [article_categories[i] for i in indices]
+
+    return articles, article_links, article_categories
 
 def create_x(n):
     return torch.tensor([[] for _ in range(n)], dtype=torch.float)
