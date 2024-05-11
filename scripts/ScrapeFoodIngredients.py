@@ -21,7 +21,7 @@ print("Category members: " + cat_name)
 find_categorymembers(cat.categorymembers)
 print(possible_categories_pages)
 
-def print_categorymembers(categorymembers, level=0, max_level=2):
+def print_categorymembers(categorymembers, level=0, max_level=3):
     for c in categorymembers.values():
         print("%s: %s (ns: %d)" % ("*" * (level + 1), c.title, c.ns))
         title = c.title 
@@ -29,9 +29,9 @@ def print_categorymembers(categorymembers, level=0, max_level=2):
         body = c.text
         categories = []
         pages = []
-        for title in c.links.keys():
-            if title in possible_categories_pages:
-                pages.append(title)
+        for page_title in c.links.keys():
+            if  page_title in possible_categories_pages:
+                pages.append(page_title)
         for cat in c.categories.keys():
             if cat in possible_categories_pages:
                 categories.append(cat)

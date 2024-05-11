@@ -26,7 +26,7 @@ category_frequncy_dict = {
     
 }
 
-def print_categorymembers(categorymembers, level=0, max_level=2):
+def print_categorymembers(categorymembers, level=0, max_level=4):
     for c in categorymembers.values():
         print("%s: %s (ns: %d)" % ("*" * (level + 1), c.title, c.ns))
         for cat in c.categories:
@@ -37,10 +37,10 @@ def print_categorymembers(categorymembers, level=0, max_level=2):
         if c.ns == wikipediaapi.Namespace.CATEGORY and level < max_level:
             print_categorymembers(c.categorymembers, level=level + 1, max_level=max_level)
 
-
-
 print_categorymembers(cat.categorymembers)
 print(category_frequncy_dict)
 
+filtered_dict = {key:val for key, val in category_frequncy_dict.items() if val != 1}
+
 with open("data/categoryfreq.json", "w") as outfile: 
-    json.dump(category_frequncy_dict, outfile, indent=4)
+    json.dump(filtered_dict, outfile, indent=4)
