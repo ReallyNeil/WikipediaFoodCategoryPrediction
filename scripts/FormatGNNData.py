@@ -11,10 +11,9 @@ def get_categories_from_json(file):
     categories = [key.split(":")[1] for key in data.keys()]
     return categories
 
-def get_articles_from_json(file, n):
+def get_articles_from_json(file):
     with open(file, 'r') as f:
         data = json.load(f)
-    data = dict(list(data.items())[:n])
 
     articles = [key for key in data.keys()]
     article_pages = []
@@ -71,9 +70,8 @@ def create_data(categories, articles, articles_links, article_categories):
 if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
-    n = 200
     categories = get_categories_from_json(path + '/../data/categoryfreq.json')
-    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', n)
+    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json')
 
     data = create_data(categories, articles, articles_links, article_categories)
-    torch.save(data, path + '/../data/sample_GNN_data.pt')
+    torch.save(data, path + '/../data/GNN_data.pt')
