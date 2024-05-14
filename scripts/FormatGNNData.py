@@ -80,7 +80,7 @@ def create_edges(articles, article_links, embeddings_dict):
             idx = articles.index(article_links[i][j])
             cosine_sim = get_cosine_sim(articles[i], articles[idx], embeddings_dict)
 
-            if cosine_sim > 0.3:
+            if cosine_sim > 0.5:
                 start.append(i)
                 end.append(idx)
                 weight.append(cosine_sim)
@@ -109,11 +109,13 @@ if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
     # n = 200
+    # n = 500
     # categories = get_categories_from_json(path + '/../data/categoryfreq.json')
     # articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, n)
     categories = get_categories_from_json(path + '/../data/categoryfreq.json')
     articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories)
 
     data = create_data(categories, articles, articles_links, article_categories)
-    # torch.save(data, path + '/../data/sample_GNN_data_node_feature.pt')
-    torch.save(data, path + '/../data/GNN_data_node_feature.pt')
+    # torch.save(data, path + '/../data/sample_GNN_data_high_cosine.pt')
+    # torch.save(data, path + '/../data/large_sample_GNN_data_node_feature.pt')
+    torch.save(data, path + '/../data/GNN_data_high_cosine.pt')
