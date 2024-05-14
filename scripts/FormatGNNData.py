@@ -11,13 +11,14 @@ def get_categories_from_json(file):
         data = json.load(f)
 
     categories = [key.split(":")[1] for key in data.keys()]
-    return categories
+    category_freq = [value for value in data.values()]
+    return categories, category_freq
 
-# def get_articles_from_json(file, categories, n):
-def get_articles_from_json(file, categories):
+def get_articles_from_json(file, categories, n):
+# def get_articles_from_json(file, categories):
     with open(file, 'r') as f:
         data = json.load(f)
-    # data = dict(list(data.items())[:n])
+    data = dict(list(data.items())[:n])
 
     articles = [key for key in data.keys()]
     article_pages = []
@@ -94,28 +95,33 @@ def create_edges(articles, article_links, embeddings_dict):
     return edge_index, edge_attr
 
 def create_y(categories, article_categories):
-    return torch.tensor([[a.count(c) for c in categories] for a in article_categories], dtype=torch.float)
+    y = torch.tensor([[a.count(c) for c in categories] for a in article_categories], dtype=torch.float)
 
-def create_data(categories, articles, articles_links, article_categories):
+    avg = float(sum(category_freq)) / len(category_freq)
+    y_weights = torch.tensor([avg / cf for cf in category_freq], dtype=torch.float)
+
+    return y, y_weights
+
+def create_data(categories, category_freq, articles, articles_links, article_categories):
     embeddings_dict = get_sentence_embeddings(articles)
     x = create_x(articles, embeddings_dict)
     edge_index, edge_attr = create_edges(articles, articles_links, embeddings_dict)
-    y = create_y(categories, article_categories)
-    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, articles=articles, categories=categories)
+    y, y_weights = create_y(categories, article_categories)
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, y_weights=y_weights, articles=articles, categories=categories)
     transform = RemoveDuplicatedEdges()
     return transform(data)
 
 if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
-    # n = 200
+    n = 200
     # n = 500
-    # categories = get_categories_from_json(path + '/../data/categoryfreq.json')
-    # articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, n)
-    categories = get_categories_from_json(path + '/../data/categoryfreq.json')
-    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories)
+    categories, category_freq = get_categories_from_json(path + '/../data/categoryfreq.json')
+    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, n)
+    # categories, category_freq = get_categories_from_json(path + '/../data/categoryfreq.json')
+    # articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories)
 
-    data = create_data(categories, articles, articles_links, article_categories)
-    # torch.save(data, path + '/../data/sample_GNN_data_high_cosine.pt')
+    data = create_data(categories, category_freq, articles, articles_links, article_categories)
+    torch.save(data, path + '/../data/sample_GNN_data_class_weights.pt')
     # torch.save(data, path + '/../data/large_sample_GNN_data_node_feature.pt')
-    torch.save(data, path + '/../data/GNN_data_high_cosine.pt')
+    # torch.save(data, path + '/../data/GNN_data_class_weights.pt')
