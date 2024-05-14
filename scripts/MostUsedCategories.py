@@ -40,7 +40,7 @@ def print_categorymembers(categorymembers, level=0, max_level=4):
 print_categorymembers(cat.categorymembers)
 print(category_frequncy_dict)
 
-filtered_dict = {key:val for key, val in category_frequncy_dict.items() if val != 1}
+filtered_dict = {key:val for key, val in category_frequncy_dict.items() if val > 50}
 
 with open("data/categoryfreq.json", "w") as outfile: 
     json.dump(filtered_dict, outfile, indent=4)
