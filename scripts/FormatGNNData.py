@@ -13,17 +13,30 @@ def get_categories_from_json(file):
     categories = [key.split(":")[1] for key in data.keys()]
     return categories
 
-def get_articles_from_json(file):
+# def get_articles_from_json(file, categories, n):
+def get_articles_from_json(file, categories):
     with open(file, 'r') as f:
         data = json.load(f)
+    # data = dict(list(data.items())[:n])
 
     articles = [key for key in data.keys()]
     article_pages = []
     article_categories = []
     for _, value in data.items():
         article_pages.append(value['pages'])
-        categories = [category.split(":")[1] for category in value['categories']]
-        article_categories.append(categories)
+        article_categories.append([category.split(":")[1] for category in value['categories']])
+
+    indices = []
+    for i in range(len(articles)):
+        for j in range(len(article_categories[i])):
+            if article_categories[i][j] in categories:
+                indices.append(i)
+    indices = list(set(indices))
+    indices.sort()
+
+    articles = [articles[i] for i in indices]
+    article_pages = [article_pages[i] for i in indices]
+    article_categories = [article_categories[i] for i in indices]
 
     article_links = []
     indices = []
@@ -69,13 +82,14 @@ def create_edges(articles, article_links):
             idx = articles.index(article_links[i][j])
             cosine_sim = get_cosine_sim(articles[i], articles[idx], embeddings_dict)
 
-            start.append(i)
-            end.append(idx)
-            weight.append(cosine_sim)
+            if cosine_sim > 0.3:
+                start.append(i)
+                end.append(idx)
+                weight.append(cosine_sim)
 
-            start.append(idx)
-            end.append(i)
-            weight.append(cosine_sim)
+                start.append(idx)
+                end.append(i)
+                weight.append(cosine_sim)
 
     edge_index = torch.tensor([start, end], dtype=torch.long)
     edge_attr = torch.tensor(weight, dtype=torch.float)
@@ -95,8 +109,12 @@ def create_data(categories, articles, articles_links, article_categories):
 if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
+    # n = 200
+    # categories = get_categories_from_json(path + '/../data/categoryfreq.json')
+    # articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, n)
     categories = get_categories_from_json(path + '/../data/categoryfreq.json')
-    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json')
+    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories)
 
     data = create_data(categories, articles, articles_links, article_categories)
-    torch.save(data, path + '/../data/GNN_data.pt')
+    # torch.save(data, path + '/../data/sample_GNN_data_filtered.pt')
+    torch.save(data, path + '/../data/GNN_data_filtered.pt')
