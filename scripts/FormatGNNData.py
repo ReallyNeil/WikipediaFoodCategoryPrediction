@@ -70,12 +70,10 @@ def get_cosine_sim(article1, article2, embeddings_dict):
     cosine_sim = 1 - distance.cosine(embedding1, embedding2)
     return cosine_sim
 
-def create_x(n):
-    return torch.tensor([[] for _ in range(n)], dtype=torch.float)
+def create_x(articles, embeddings_dict):
+    return torch.tensor([embeddings_dict[a] for a in articles], dtype=torch.float)
 
-def create_edges(articles, article_links):
-    embeddings_dict = get_sentence_embeddings(articles)
-
+def create_edges(articles, article_links, embeddings_dict):
     start, end, weight = [], [], []
     for i in range(len(article_links)):
         for j in range(len(article_links[i])):
@@ -99,8 +97,9 @@ def create_y(categories, article_categories):
     return torch.tensor([[a.count(c) for c in categories] for a in article_categories], dtype=torch.float)
 
 def create_data(categories, articles, articles_links, article_categories):
-    x = create_x(len(articles))
-    edge_index, edge_attr = create_edges(articles, articles_links)
+    embeddings_dict = get_sentence_embeddings(articles)
+    x = create_x(articles, embeddings_dict)
+    edge_index, edge_attr = create_edges(articles, articles_links, embeddings_dict)
     y = create_y(categories, article_categories)
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, articles=articles, categories=categories)
     transform = RemoveDuplicatedEdges()
@@ -116,5 +115,5 @@ if __name__ == '__main__':
     articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories)
 
     data = create_data(categories, articles, articles_links, article_categories)
-    # torch.save(data, path + '/../data/sample_GNN_data_filtered.pt')
-    torch.save(data, path + '/../data/GNN_data_filtered.pt')
+    # torch.save(data, path + '/../data/sample_GNN_data_node_feature.pt')
+    torch.save(data, path + '/../data/GNN_data_node_feature.pt')
