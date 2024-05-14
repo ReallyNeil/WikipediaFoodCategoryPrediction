@@ -3,6 +3,8 @@ import json
 import torch
 from torch_geometric.data import Data
 from torch_geometric.transforms import RemoveDuplicatedEdges
+from sentence_transformers import SentenceTransformer
+from scipy.spatial import distance
 
 def get_categories_from_json(file):
     with open(file, 'r') as f:
@@ -41,37 +43,60 @@ def get_articles_from_json(file):
 
     return articles, article_links, article_categories
 
+def get_sentence_embeddings(articles):
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    sentence_embeddings = model.encode(articles)    
+    embeddings_dict = dict(zip(articles, sentence_embeddings))
+    return embeddings_dict
+
+def get_cosine_sim(article1, article2, embeddings_dict):
+    embedding1 = embeddings_dict[article1]
+    embedding2 = embeddings_dict[article2]
+
+    cosine_sim = 1 - distance.cosine(embedding1, embedding2)
+    return cosine_sim
+
 def create_x(n):
     return torch.tensor([[] for _ in range(n)], dtype=torch.float)
 
-def create_edge_index(articles, article_links):
-    start, end = [], []
+def create_edges(articles, article_links):
+    embeddings_dict = get_sentence_embeddings(articles)
+
+    start, end, weight = [], [], []
     for i in range(len(article_links)):
         for j in range(len(article_links[i])):
             idx = articles.index(article_links[i][j])
+            cosine_sim = get_cosine_sim(articles[i], articles[idx], embeddings_dict)
+
             start.append(i)
             end.append(idx)
+            weight.append(cosine_sim)
+
             start.append(idx)
             end.append(i)
-    return torch.tensor([start, end], dtype=torch.long)
+            weight.append(cosine_sim)
+
+    edge_index = torch.tensor([start, end], dtype=torch.long)
+    edge_attr = torch.tensor(weight, dtype=torch.float)
+    return edge_index, edge_attr
 
 def create_y(categories, article_categories):
     return torch.tensor([[a.count(c) for c in categories] for a in article_categories], dtype=torch.float)
 
 def create_data(categories, articles, articles_links, article_categories):
     x = create_x(len(articles))
-    edge_index = create_edge_index(articles, articles_links)
+    edge_index, edge_attr = create_edges(articles, articles_links)
     y = create_y(categories, article_categories)
-    data = Data(x=x, edge_index=edge_index, y=y)
-
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, articles=articles, categories=categories)
     transform = RemoveDuplicatedEdges()
     return transform(data)
 
 if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
-    categories = get_categories_from_json(path + '/../data/sample_categories.json')
-    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample_articles.json')
+    categories = get_categories_from_json(path + '/../data/categoryfreq.json')
+    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json')
 
     data = create_data(categories, articles, articles_links, article_categories)
-    torch.save(data, path + '/../data/sample_GNN_data.pt')
+    torch.save(data, path + '/../data/GNN_data.pt')
