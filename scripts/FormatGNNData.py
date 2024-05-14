@@ -94,7 +94,7 @@ def create_edges(articles, article_links, embeddings_dict):
     edge_attr = torch.tensor(weight, dtype=torch.float)
     return edge_index, edge_attr
 
-def create_y(categories, article_categories):
+def create_y(categories, category_freq, article_categories):
     y = torch.tensor([[a.count(c) for c in categories] for a in article_categories], dtype=torch.float)
 
     avg = float(sum(category_freq)) / len(category_freq)
@@ -106,7 +106,7 @@ def create_data(categories, category_freq, articles, articles_links, article_cat
     embeddings_dict = get_sentence_embeddings(articles)
     x = create_x(articles, embeddings_dict)
     edge_index, edge_attr = create_edges(articles, articles_links, embeddings_dict)
-    y, y_weights = create_y(categories, article_categories)
+    y, y_weights = create_y(categories, category_freq, article_categories)
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y, y_weights=y_weights, articles=articles, categories=categories)
     transform = RemoveDuplicatedEdges()
     return transform(data)
@@ -114,14 +114,14 @@ def create_data(categories, category_freq, articles, articles_links, article_cat
 if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
-    n = 200
-    # n = 500
+    # n = 200
+    n = 800
     categories, category_freq = get_categories_from_json(path + '/../data/categoryfreq.json')
     articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, n)
     # categories, category_freq = get_categories_from_json(path + '/../data/categoryfreq.json')
     # articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories)
 
     data = create_data(categories, category_freq, articles, articles_links, article_categories)
-    torch.save(data, path + '/../data/sample_GNN_data_class_weights.pt')
-    # torch.save(data, path + '/../data/large_sample_GNN_data_node_feature.pt')
+    # torch.save(data, path + '/../data/sample_GNN_data_class_weights.pt')
+    torch.save(data, path + '/../data/large_sample_GNN_data_class_weights.pt')
     # torch.save(data, path + '/../data/GNN_data_class_weights.pt')
