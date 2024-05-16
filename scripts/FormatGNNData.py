@@ -114,7 +114,7 @@ if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
     start = 3200
-    end = 4000
+    end = -1
     categories, category_freq = get_categories_from_json(path + '/../data/categoryfreq.json')
     articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, start, end)
 
