@@ -14,11 +14,10 @@ def get_categories_from_json(file):
     category_freq = [value for value in data.values()]
     return categories, category_freq
 
-def get_articles_from_json(file, categories, n):
-# def get_articles_from_json(file, categories):
+def get_articles_from_json(file, categories, start, end):
     with open(file, 'r') as f:
         data = json.load(f)
-    data = dict(list(data.items())[:n])
+    data = dict(list(data.items())[start:end])
 
     articles = [key for key in data.keys()]
     article_pages = []
@@ -114,14 +113,10 @@ def create_data(categories, category_freq, articles, articles_links, article_cat
 if __name__ == '__main__':
     path = os.path.dirname(__file__)
 
-    # n = 200
-    n = 800
+    start = 3200
+    end = 4000
     categories, category_freq = get_categories_from_json(path + '/../data/categoryfreq.json')
-    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, n)
-    # categories, category_freq = get_categories_from_json(path + '/../data/categoryfreq.json')
-    # articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories)
+    articles, articles_links, article_categories = get_articles_from_json(path + '/../data/sample.json', categories, start, end)
 
     data = create_data(categories, category_freq, articles, articles_links, article_categories)
-    # torch.save(data, path + '/../data/sample_GNN_data_class_weights.pt')
-    torch.save(data, path + '/../data/large_sample_GNN_data_class_weights.pt')
-    # torch.save(data, path + '/../data/GNN_data_class_weights.pt')
+    torch.save(data, path + '/../data/sample_GNN_data_' + str(start) + '_' + str(end) + '.pt')
