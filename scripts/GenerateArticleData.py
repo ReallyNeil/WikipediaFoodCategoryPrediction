@@ -3,9 +3,6 @@ import wikipediaapi
 import json 
 
 
-
-
-
 wiki_wiki = wikipediaapi.Wikipedia('WikipediaFoodCategoryIngredients (nae28@cornell.edu)', 'en')
 
 article_name_dict = {

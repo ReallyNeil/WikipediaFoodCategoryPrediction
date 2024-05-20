@@ -4,9 +4,6 @@ import json
 import requests 
 import re
 
-
-
-
 wiki_wiki = wikipediaapi.Wikipedia('WikipediaFoodCategoryIngredients (nae28@cornell.edu)', 'en')
 
 article_name_dict = {
